@@ -36,7 +36,7 @@ void loop(void)
   if (Serial.available() > 0) {
     // read the input
     int inByte = Serial.read();
-    delay(500); // small delay before responding
+    //delay(500); // small delay before responding
 
     // respond only if correct command is received
     if ((char)inByte == 'r') {
@@ -49,6 +49,7 @@ void loop(void)
           Serial.println(values[i], DEC);
         }
       }
+      
     }
   }
   

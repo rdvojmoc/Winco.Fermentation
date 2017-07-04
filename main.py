@@ -1,8 +1,10 @@
 import serial
+import logging
 import sys, os, getopt, time, signal, json
 import losantHelper
 
 dirName = os.path.dirname(os.path.abspath(__file__))
+logger = logging.getLogger('Winco.Fermentation')
 secrets = {}
 settings = {}
 
@@ -20,6 +22,7 @@ def closePort():
 # function to run before ending the program
 def endMeasurements():
 	closePort()
+	logger.info("Service stopped.")
 
 # Signal interrupt handler
 def signalHandler(signal, frame):
@@ -39,21 +42,38 @@ def loadJSONConfig(filePath):
 # define a signal to run a function when ctrl+c is pressed
 signal.signal(signal.SIGINT, signalHandler)
 
+def createLogger():
+	# create file handler which logs even debug messages
+	logger.setLevel(logging.DEBUG);
+	
+	fh = logging.FileHandler('Winco.Fermentation.log')
+	fh.setLevel(logging.DEBUG)
+	
+	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+	fh.setFormatter(formatter)
+	# add the handlers to the logger
+	logger.addHandler(fh)
+
+
 def mainProgram():
-	print("Starting wine fermentation data collection...");
+	createLogger()
+
+	logger.info("Starting wine fermentation data collection...")
 	
 	secrets = loadJSONConfig('/'.join([dirName, "secrets.json"]))
 	settings = loadJSONConfig('/'.join([dirName, "settings.json"]))
 
 	losantHelper.init(secrets["deviceId"], secrets["key"], secrets["secret"])
 	
-	print("Initialization done.")
+	logger.info("Initialization done.");
 
 	while True:
 		# get a reading from the plant
 		serialPort.write('r')
 		
 		state = {"OutsideTemperature": serialPort.readline(), "WellWaterTemperature": serialPort.readline()}
+		
+		logger.debug(state)
 		
 		losantHelper.sendMeasurement(state)
 		
