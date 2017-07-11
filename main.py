@@ -4,7 +4,7 @@ import sys, os, getopt, time, signal, json
 import losantHelper
 
 dirName = os.path.dirname(os.path.abspath(__file__))
-logger = logging.getLogger('Winco.Fermentation')
+logger = logging.getLogger()
 secrets = {}
 settings = {}
 
@@ -51,9 +51,9 @@ def createLogger():
 	
 	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 	fh.setFormatter(formatter)
+	
 	# add the handlers to the logger
 	logger.addHandler(fh)
-
 
 def mainProgram():
 	createLogger()
