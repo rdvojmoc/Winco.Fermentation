@@ -71,8 +71,8 @@ def mainProgram():
 		# get a reading from the plant
 		serialPort.write('r')
 		
-		state = {"OutsideTemperature": serialPort.readline(), "WellWaterTemperature": serialPort.readline()}
-		
+		state = {"OutsideTemperature": serialPort.readline(), "WellWaterTemperature": serialPort.readline(), "VineTemeperatureBottom": serialPort.readline()}
+
 		logger.debug(state)
 		
 		losantHelper.sendMeasurement(state)

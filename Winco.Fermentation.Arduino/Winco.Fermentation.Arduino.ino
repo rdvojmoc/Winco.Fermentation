@@ -31,6 +31,7 @@ void loop(void)
   // Why "byIndex"? You can have more than one IC on the same bus. 0 refers to the first IC on the wire
   values[0] = sensors.getTempCByIndex(0);
   values[1] = sensors.getTempCByIndex(1);
+  values[2] = sensors.getTempCByIndex(2);
 
   // check for input on serial port
   if (Serial.available() > 0) {
