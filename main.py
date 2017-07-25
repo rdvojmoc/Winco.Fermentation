@@ -1,27 +1,19 @@
-import serial
 import logging
 import sys, os, getopt, time, signal, json
 import losantHelper
+from probe import Probe
 
 dirName = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger()
 secrets = {}
 settings = {}
 
-# initialize the serial port
-serialPort = serial.Serial('/dev/ttyS1', 9600, timeout=2)
-if serialPort.isOpen() == False:
-	print("ERROR: Failed to initialize serial port!")
-	exit()
-
-# function to close the serial port
-def closePort():
-	if serialPort.isOpen():
-		serialPort.close()
+# load modprobe drivers
+os.system('modprobe w1-gpio')
+os.system('modprobe w1-therm')
 
 # function to run before ending the program
 def endMeasurements():
-	closePort()
 	logger.info("Service stopped.")
 
 # Signal interrupt handler
@@ -42,11 +34,12 @@ def loadJSONConfig(filePath):
 # define a signal to run a function when ctrl+c is pressed
 signal.signal(signal.SIGINT, signalHandler)
 
+
 def createLogger():
 	# create file handler which logs even debug messages
 	logger.setLevel(logging.DEBUG);
 	
-	fh = logging.FileHandler('Winco.Fermentation.log')
+	fh = logging.FileHandler('/'.join([dirName,'Winco.Fermentation.log']))
 	fh.setLevel(logging.DEBUG)
 	
 	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -57,7 +50,7 @@ def createLogger():
 
 def mainProgram():
 	createLogger()
-
+	
 	logger.info("Starting wine fermentation data collection...")
 	
 	secrets = loadJSONConfig('/'.join([dirName, "secrets.json"]))
@@ -65,23 +58,26 @@ def mainProgram():
 
 	losantHelper.init(secrets["deviceId"], secrets["key"], secrets["secret"])
 	
+	wellTempProbe = Probe('/sys/bus/w1/devices/28-000004d029cc/w1_slave')
+	outsideTempProbe = Probe('/sys/bus/w1/devices/28-000004d109a8/w1_slave')
+	vineBottomTempProbe = Probe('/sys/bus/w1/devices/28-031683b233ff/w1_slave')
+	
 	logger.info("Initialization done.");
 
 	while True:
 		# get a reading from the plant
-		serialPort.write('r')
-		
-		state = {"OutsideTemperature": serialPort.readline(), "WellWaterTemperature": serialPort.readline(), "VineTemeperatureBottom": serialPort.readline()}
+		state = {"OutsideTemperature": outsideTempProbe.read_temp(), "WellWaterTemperature": wellTempProbe.read_temp(), "VineTemeperatureBottom": vineBottomTempProbe.read_temp()}
 
 		logger.debug(state)
 		
 		losantHelper.sendMeasurement(state)
 		
 		# delay between readings
-		time.sleep(20)
+		time.sleep(10)
 	
-	#close serial
+	#close
 	endMeasurements()
 
+	
 if __name__ == "__main__":
 	mainProgram()

@@ -1,0 +1,11 @@
+[Unit]
+Description=Winco Fermentation service
+After=network.target network-online.target multi-user.target
+ 
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /usr/local/Winco.Fermentation/main.py
+Restart=on-abort
+ 
+[Install]
+WantedBy=multi-user.target
