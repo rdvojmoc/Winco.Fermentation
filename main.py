@@ -58,22 +58,25 @@ def mainProgram():
 
 	losantHelper.init(secrets["deviceId"], secrets["key"], secrets["secret"])
 	
-	wellTempProbe = Probe('/sys/bus/w1/devices/28-000004d029cc/w1_slave')
-	outsideTempProbe = Probe('/sys/bus/w1/devices/28-000004d109a8/w1_slave')
-	vineBottomTempProbe = Probe('/sys/bus/w1/devices/28-031683b233ff/w1_slave')
+	s1 = Probe('/sys/bus/w1/devices/28-000004d109a8/w1_slave')
+	s2 = Probe('/sys/bus/w1/devices/28-0416841e1fff/w1_slave')
+	s3 = Probe('/sys/bus/w1/devices/28-031683b233ff/w1_slave')
+	s4 = Probe('/sys/bus/w1/devices/28-0316839543ff/w1_slave')
+	s5 = Probe('/sys/bus/w1/devices/28-000004d0bcce/w1_slave')
+	s6 = Probe('/sys/bus/w1/devices/28-04168411d7ff/w1_slave')
 	
 	logger.info("Initialization done.");
 
 	while True:
 		# get a reading from the plant
-		state = {"OutsideTemperature": outsideTempProbe.read_temp(), "WellWaterTemperature": wellTempProbe.read_temp(), "VineTemeperatureBottom": vineBottomTempProbe.read_temp()}
+		state = {"S1": s1.read_temp(), "S2": s2.read_temp(), "S3": s3.read_temp(), "S4": s4.read_temp(), "S5": s5.read_temp(), "S6": s6.read_temp()}
 
 		logger.debug(state)
 		
 		losantHelper.sendMeasurement(state)
 		
 		# delay between readings
-		time.sleep(10)
+		time.sleep(5)
 	
 	#close
 	endMeasurements()
